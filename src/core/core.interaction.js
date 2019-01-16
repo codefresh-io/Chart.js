@@ -61,17 +61,6 @@ function getIntersectItems(chart, position) {
 	return elements;
 }
 
-function getIntersectItemsOnYaxis(chart, position) {
-	var elements = [];
-
-	parseVisibleItems(chart, function(element) {
-		elements.push(element);
-
-	});
-
-	return elements;
-}
-
 /**
  * Helper function to get the items nearest to the event position considering all visible items in teh chart
  * @param chart {Chart} the chart to look at elements from
@@ -145,43 +134,6 @@ function indexMode(chart, e, options) {
 	});
 
 	return elements;
-}
-
-function indexModeForYAxis(chart, e, options) {
-	var position = getRelativePosition(e, chart);
-	// Default axis for index mode is 'x' to match old behaviour
-	options.axis = options.axis || 'x';
-	var distanceMetric = getDistanceMetricForAxis(options.axis);
-	var items = getIntersectItemsOnYaxis(chart,position);
-	var elements = [];
-	chart.data.datasets.forEach(function(dataset, datasetIndex) {
-		if (chart.isDatasetVisible(datasetIndex)) {
-			var meta = chart.getDatasetMeta(datasetIndex);
-			var element = meta.data[items[0]._index];
-
-			// don't count items that are skipped (null data)
-			if (element && !element._view.skip) {
-				elements.push(element);
-			}
-		}
-	});
-	let selectedDataset;
-	let annominate;
-	elements.forEach(function (item) {
-		if (!selectedDataset){
-			annominate = item
-		} else {
-			annominate=selectedDataset;
-		}
-		if (item._model.controlPointPreviousX <= position.x && item._model.controlPointNextX*3 >= position.x) {
-			if (Math.abs(item._model.y - position.y)<= Math.abs(annominate._model.y - position.y) && Math.abs(item._model.y - position.y)<3) {
-				selectedDataset = item;
-				annominate=selectedDataset;
-			}
-		}
-
-	})
-	return selectedDataset;
 }
 
 /**
@@ -266,10 +218,6 @@ module.exports = {
 			return indexMode(chart, e, {intersect: false});
 		},
 
-		'y-axis': function(chart, e) {
-			return indexModeForYAxis(chart, e, {intersect: false});
-		},
-
 		/**
 		 * Point mode returns all elements that hit test based on the event position
 		 * of the event
@@ -295,26 +243,7 @@ module.exports = {
 			var position = getRelativePosition(e, chart);
 			options.axis = options.axis || 'xy';
 			var distanceMetric = getDistanceMetricForAxis(options.axis);
-			var nearestItems = getNearestItems(chart, position, options.intersect, distanceMetric);
-
-			// We have multiple items at the same distance from the event. Now sort by smallest
-			if (nearestItems.length > 1) {
-				nearestItems.sort(function(a, b) {
-					var sizeA = a.getArea();
-					var sizeB = b.getArea();
-					var ret = sizeA - sizeB;
-
-					if (ret === 0) {
-						// if equal sort by dataset index
-						ret = a._datasetIndex - b._datasetIndex;
-					}
-
-					return ret;
-				});
-			}
-
-			// Return only 1 item
-			return nearestItems.slice(0, 1);
+			return getNearestItems(chart, position, options.intersect, distanceMetric);
 		},
 
 		/**
