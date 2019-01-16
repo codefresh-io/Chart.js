@@ -682,6 +682,10 @@ module.exports = function(Chart) {
 			return Interaction.modes['x-axis'](this, e, {intersect: true});
 		},
 
+		getElementsAtYAxis: function(e) {
+			return Interaction.modes['y-axis'](this, e, {intersect: true});
+		},
+
 		getElementsAtEventForMode: function(e, mode, options) {
 			var method = Interaction.modes[mode];
 			if (typeof method === 'function') {
