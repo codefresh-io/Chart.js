@@ -136,6 +136,43 @@ function indexMode(chart, e, options) {
 	return elements;
 }
 
+function indexModeForYAxis(chart, e, options) {
+	var position = getRelativePosition(e, chart);
+	// Default axis for index mode is 'x' to match old behaviour
+	options.axis = options.axis || 'x';
+	var distanceMetric = getDistanceMetricForAxis(options.axis);
+	var items = getIntersectItemsOnYaxis(chart,position);
+	var elements = [];
+	chart.data.datasets.forEach(function(dataset, datasetIndex) {
+		if (chart.isDatasetVisible(datasetIndex)) {
+			var meta = chart.getDatasetMeta(datasetIndex);
+			var element = meta.data[items[0]._index];
+
+			// don't count items that are skipped (null data)
+			if (element && !element._view.skip) {
+				elements.push(element);
+			}
+		}
+	});
+	let selectedDataset;
+	let annominate;
+	elements.forEach(function (item) {
+		if (!selectedDataset){
+			annominate = item
+		} else {
+			annominate=selectedDataset;
+		}
+		if (item._model.controlPointPreviousX <= position.x && item._model.controlPointNextX*3 >= position.x) {
+			if (Math.abs(item._model.y - position.y)<= Math.abs(annominate._model.y - position.y) && Math.abs(item._model.y - position.y)<3) {
+				selectedDataset = item;
+				annominate=selectedDataset;
+			}
+		}
+
+	})
+	return selectedDataset;
+}
+
 /**
  * @interface IInteractionOptions
  */
@@ -216,6 +253,10 @@ module.exports = {
 		 */
 		'x-axis': function(chart, e) {
 			return indexMode(chart, e, {intersect: false});
+		},
+
+		'y-axis': function(chart, e) {
+			return indexModeForYAxis(chart, e, {intersect: false});
 		},
 
 		/**
