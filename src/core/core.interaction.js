@@ -61,6 +61,17 @@ function getIntersectItems(chart, position) {
 	return elements;
 }
 
+function getIntersectItemsOnYaxis(chart, position) {
+	var elements = [];
+
+	parseVisibleItems(chart, function(element) {
+		elements.push(element);
+
+	});
+
+	return elements;
+}
+
 /**
  * Helper function to get the items nearest to the event position considering all visible items in teh chart
  * @param chart {Chart} the chart to look at elements from
